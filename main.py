@@ -19,7 +19,7 @@ email_login = "phystech.tinder.bot@gmail.com"
 email_password = open("config/email_password.txt").read()
 API_TOKEN = open("config/token.txt").read()
 
-storage = MemoryStorage()
+storage = RedisStorage2()
 
 bot = Bot(API_TOKEN)
 dp = Dispatcher(bot, storage=storage)
@@ -95,7 +95,7 @@ async def process_email(message: types.message, state: FSMContext):
 
     if email.endswith("@phystech.edu") or email.endswith("@mipt.ru"):
         await state.update_data(university='МФТИ')
-    elif email.endswith("@students.hse.ru") or email.endswith("@hse.ru"):
+    elif email.endswith("@edu.hse.ru") or email.endswith("@hse.ru"):
         await state.update_data(university='ВШЭ')
     else:
         await message.answer("Неправильный email. Попробуй ещё раз")
@@ -109,7 +109,8 @@ async def process_email(message: types.message, state: FSMContext):
         data['last_code'] = time.time()
 
     await message.answer("""Для проверки на почту должен прийти 6-значный код, напиши его ответным сообщением.
-Если код не придёт, через минуту можно потребовать новый, написав 'Заново'""")
+Если код не придёт, через минуту можно потребовать новый, написав 'Заново'
+Не забудь проверить спам :)""")
 
 
 @dp.message_handler(Text(equals='заново', ignore_case=True), state=User.code)
@@ -264,13 +265,13 @@ async def process_gender_pref_invalid(message: types.Message, state: FSMContext)
 @dp.message_handler(state=User.gender_pref)
 async def process_gender_pref(message: types.Message, state: FSMContext):
     if message.text == 'Мужской':
-        await state.update_data(gender_pref=frozenset(['Мужской']))
+        await state.update_data(gender_pref=['Мужской'])
     elif message.text == 'Женский':
-        await state.update_data(gender_pref=frozenset(['Женский']))
+        await state.update_data(gender_pref=['Женский'])
     elif message.text == 'Мужской и женский':
-        await state.update_data(gender_pref=frozenset(['Мужской', 'Женский']))
+        await state.update_data(gender_pref=['Мужской', 'Женский'])
     elif message.text == 'Другой':
-            await state.update_data(gender_pref=frozenset(['Другой']))
+            await state.update_data(gender_pref=['Другой'])
     
     await state.update_data(full=True)
     await User.next()
